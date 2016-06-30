@@ -4,6 +4,7 @@ DBHOST="localhost" #MySQL Hostname
 DBUSER="root" #MySQL user that can dump all databases
 DBPASSWORD="" #MySQL password
 DBPORT="3306" #MySQL Port Number
+DBNAMES="production development" #Databases to backup, separated by space
 FILESROOT="/var/www" #root of your (virtual) hosting files, E.g: For apache, it is /var/www, for nginx, it's /usr/share/nginx/html "WITHOUT THE END TRAILING SLASH"
 BASEFOLDER="/tmp" #Temporary folder to create database dump folder (a subfolder will be created to this folder upon dumping)
 BACKUPFOLDER="backmeup" #your backup folder that'll be created on Backup provider

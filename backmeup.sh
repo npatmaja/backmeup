@@ -69,6 +69,10 @@ case $key in
     DBPORT="$2"
     shift # past argument
     ;;
+    -dbnames|--database-names)
+    DBNAMES="$2"
+    shift # past argument
+    ;;
     -f|--files-root)
     FILESROOT="$2"
     shift # past argument
@@ -154,7 +158,7 @@ fi
 # Let's check whether the script is installable
 if [[ "$INSTALLABLE" == "yes" ]]
 then
-    
+
     # pre-cleanup
     cleanup $BASEFOLDER
     # folder for new backup
@@ -167,13 +171,21 @@ then
     echo '| Dumping Databases...'
     echo '|'
     # Let's start dumping the databases
-    databases=`mysql -h$DBHOST -u$DBUSER -p$DBPASSWORD -P$DBPORT -e "SHOW DATABASES;" | tr -d "| " | grep -v Database`
-    for db in $databases; do
-        if [[ "$db" != "information_schema" ]] && [[ "$db" != "performance_schema" ]] && [[ "$db" != "mysql" ]] && [[ "$db" != _* ]] ; then
-            echo "| Dumping database: $db"
-            mysqldump -h$DBHOST -u$DBUSER -p$DBPASSWORD -P$DBPORT $db > $SQLFOLDERFULL/$THEDATE.$db.sql
-        fi
-    done
+    # If DBNAMES exists then backup only those in the list
+    if [[ -n $DBNAMES ]]; then
+      for db in $DBNAMES; do
+        echo "| Dumping database: $db"
+        mysqldump -h$DBHOST -u$DBUSER -p$DBPASSWORD -P$DBPORT $db > $SQLFOLDERFULL/$THEDATE.$db.sql
+      done
+    else
+      databases=`mysql -h$DBHOST -u$DBUSER -p$DBPASSWORD -P$DBPORT -e "SHOW DATABASES;" | tr -d "| " | grep -v Database`
+      for db in $databases; do
+          if [[ "$db" != "information_schema" ]] && [[ "$db" != "performance_schema" ]] && [[ "$db" != "mysql" ]] && [[ "$db" != _* ]] ; then
+              echo "| Dumping database: $db"
+              mysqldump -h$DBHOST -u$DBUSER -p$DBPASSWORD -P$DBPORT $db > $SQLFOLDERFULL/$THEDATE.$db.sql
+          fi
+      done
+    fi
     echo '|'
     echo '| Done!'
     echo '|'
@@ -223,7 +235,7 @@ then
     if [[ "$METHOD" == "s3" ]]
         then
         echo '| Creating the directory and uploading to Amazon S3...'
-        aws s3 cp --storage-class $S3_STORAGE_CLASS $FILENAME s3://$S3_BUCKET_NAME/$BACKUPFOLDER/ 
+        aws s3 cp --storage-class $S3_STORAGE_CLASS $FILENAME s3://$S3_BUCKET_NAME/$BACKUPFOLDER/
         echo '|'
         echo '| Done!'
         echo '|'
